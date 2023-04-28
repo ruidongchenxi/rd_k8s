@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-client-provisioner
+  labels:
+    app: nfs-client-provisioner
+  # replace with namespace where provisioner is deployed
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-client-provisioner
+  template:
+    metadata:
+      labels:
+        app: nfs-client-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+        - name: nfs-client-provisioner
+          #image: quay.io/external_storage/nfs-client-provisioner:latest
+          #image: gcr.io/k8s-staging-sig-storage/nfs-subdir-external-provisioner:latest
+          image: gmoney23/nfs-client-provisioner:latest #注意该NFS-client镜像一定要与k8s版本相匹配，如果不兼容那么就无法绑定
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+            #  value: fuseim.pri/ifs  #这里必须要填写storageclass中的PROVISIONER名称信息一致
+              value: example.com/nfs
+            - name: NFS_SERVER
+              value: 192.168.10.32  #指定NFS服务器的IP地址
+            #- name: NFS_PAT 　　　　　
+            #  value: /data/kubernetes  #指定NFS服务器中的共享挂载目录
+      volumes:
+        - name: nfs-client-root #定义持久化卷的名称，必须要上面volumeMounts挂载的名称一致
+          nfs:
+            server: 192.168.10.32 #指定NFS所在的IP地址
+            path: /data/kubernetes #指定NFS服务器中的共享挂载目录
