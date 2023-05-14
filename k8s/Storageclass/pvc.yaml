@@ -1,0 +1,10 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-claim1-1 #pvc 名字
+spec:
+  accessModes:  ["ReadWriteMany"] #读写权限设置
+  resources:
+    requests:
+      storage: 1Gi #空间大小限制
+  storageClassName:  managed-nfs-storage # StorageClass的名字一致才能找到

@@ -9,10 +9,10 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate
+    type: Recreate # 更新策略
   selector:
     matchLabels:
-      app: nfs-client-provisioner
+      app: nfs-client-provisioner # 标签选择器定义
   template:
     metadata:
       labels:
@@ -27,7 +27,7 @@ spec:
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
-              value: k8s-sigs.io/nfs-subdir-external-provisioner
+              value: k8s-sigs.io/nfs-subdir-external-provisioner # 名字在StorageClass的provisioner引用
             - name: NFS_SERVER
               value: 192.168.10.29
             - name: NFS_PATH
@@ -37,3 +37,24 @@ spec:
           nfs:
             server: 192.168.10.29 # nfs 主机
             path: /data/kubernetes/pv1 #nfs 共享的目录
+
+        - name: nfs-client-pv2
+          nfs:
+            server: 192.168.10.29 # nfs 主机
+            path: /data/kubernetes/pv2 #nfs 共享的目录
+        - name: nfs-client-pv3
+          nfs:
+            server: 192.168.10.29 # nfs 主机
+            path: /data/kubernetes/pv3 #nfs 共享的目录
+        - name: nfs-client-pv4
+          nfs:
+            server: 192.168.10.29 # nfs 主机
+            path: /data/kubernetes/pv4 #nfs 共享的目录
+        - name: nfs-client-pv5
+          nfs:
+            server: 192.168.10.29 # nfs 主机
+            path: /data/kubernetes/pv5 #nfs 共享的目录
+        - name: nfs-client-pv6
+          nfs:
+            server: 192.168.10.29 # nfs 主机
+            path: /data/kubernetes/pv6 #nfs 共享的目录
