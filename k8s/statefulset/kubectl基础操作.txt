@@ -1,0 +1,12 @@
+查看pod 的标签
+[root@master-1 statefulset]# kubectl get pods --show-labels
+NAME                                      READY   STATUS    RESTARTS   AGE    LABELS
+nfs-client-provisioner-7c7bf9f6bd-dp5h8   1/1     Running   4          40d    app=nfs-client-provisioner,pod-template-hash=7c7bf9f6bd
+nginx-test                                1/1     Running   8          145d   <none>
+storage-0                                 1/1     Running   4          40d    app=storage,controller-revision-hash=storage-68fb654dbd,statefulset.kubernetes.io/pod-name=storage-0
+storage-1                                 1/1     Running   4          40d    app=storage,controller-revision-hash=storage-68fb654dbd,statefulset.kubernetes.io/pod-name=storage-1
+web-0                                     1/1     Running   4          40d    app=nginx,controller-revision-hash=web-5f6745bd6f,statefulset.kubernetes.io/pod-name=web-0
+web-1                                     1/1     Running   4          40d    app=nginx,controller-revision-hash=web-5f6745bd6f,statefulset.kubernetes.io/pod-name=web-1
+
+
+
