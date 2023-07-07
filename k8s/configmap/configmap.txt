@@ -28,4 +28,74 @@ to_prot:
 8080
 Events:  <none>
 
+创建一个配置文件
+[root@master-1 configmap]# cat ng.conf 
+server{
+server_name www.nginx.com;
+listen 80;
+root /home/nginx/www;
+}
+指定文件创建名叫www-nginx的configmap
+[root@master-1 configmap]# kubectl create configmap www-nginx --from-file=www=./ng.conf 
+configmap/www-nginx created
+[root@master-1 configmap]# kubectl get configmaps 
+NAME               DATA   AGE
+kube-root-ca.crt   1      169d
+tomcat-config      2      10h
+www-nginx          1      13s
+查看详情
+[root@master-1 configmap]# kubectl describe cm www-nginx 
+Name:         www-nginx
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+www:
+----
+server{
+server_name www.nginx.com;
+listen 80;
+root /home/nginx/www;
+}
+
+Events:  <none>
+指定目录创建configmap
+[root@master-1 configmap]# mkdir cx-1
+[root@master-1 configmap]# cd cx-1/
+[root@master-1 cx-1]# ls
+[root@master-1 cx-1]# vim my.conf
+[root@master-1 cx-1]# vim my-1.conf
+[root@master-1 cx-1]# cd ../
+[root@master-1 configmap]# cd -
+/opt/k8s/rd_k8s/k8s/configmap/cx-1
+[root@master-1 cx-1]# cat my
+my-1.conf  my.conf    
+[root@master-1 cx-1]# cat my.conf 
+service=1
+[root@master-1 cx-1]# cat my-1.conf 
+service=2
+[root@master-1 cx-1]# cd ../
+[root@master-1 configmap]# kubectl create configmap cx --from-file=./cx-1/
+configmap/cx created
+[root@master-1 configmap]# kubectl describe configmaps cx
+Name:         cx
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+my-1.conf:
+----
+service=2
+
+my.conf:
+----
+service=1
+
+Events:  <none>
+[root@master-1 configmap]# kubectl create configmap cx-2 --from-file=./cx-1
+configmap/cx-2 created
 
