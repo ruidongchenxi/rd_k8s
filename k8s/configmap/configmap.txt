@@ -1,0 +1,31 @@
+创建
+[root@master-1 configmap]# kubectl create configmap tomcat-config --from-literal=tomcat_prot=8080 --from-literal=server_name=myapp.tomcat.com
+configmap/tomcat-config created
+查看
+[root@master-1 configmap]# kubectl get configmaps 
+NAME               DATA   AGE
+kube-root-ca.crt   1      169d
+tomcat-config      2      22s
+查看
+[root@master-1 configmap]# kubectl get cm
+NAME               DATA   AGE
+kube-root-ca.crt   1      169d
+tomcat-config      2      2m44s
+查看指定configmap详细信息
+[root@master-1 configmap]# kubectl describe cm tomcat-config
+Name:         tomcat-config
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+server_name:
+----
+myapp.tomcat.com
+to_prot:
+----
+8080
+Events:  <none>
+
+
