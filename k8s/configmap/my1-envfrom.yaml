@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: chenxi-1
+spec:
+  containers:
+  - name: mysql
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    command: ["/bin.sh","-c","sleep 3600"] 
+    volumeMounts:   #以挂载的形式注入
+    - name: my-cx
+      mountPath: /tmp/config
+#    envFrom:
+#    - configMapRef:
+#        name: mysql
+  volumes: # 定义存储捐
+  - name: my-cx
+    configMap: # 存储设备类型
+      name: mysql-1
+  restartPolicy: Never
