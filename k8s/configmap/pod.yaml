@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-pod
+spec:
+  containers:
+  - name: mysql
+    image: busybox
+    command: [ "/bin/sh", "-c", "sleep 3600" ]
+    env:
+    - name: log_bin
+      valueFrom:
+        configMapKeyRef:
+          name: mysql
+          key: log
+    - name: lower
+      valueFrom:
+        configMapKeyRef:
+          name: mysql
+          key: lower
+  restartPolicy: Never

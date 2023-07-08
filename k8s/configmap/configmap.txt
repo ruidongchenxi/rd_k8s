@@ -98,4 +98,76 @@ service=1
 Events:  <none>
 [root@master-1 configmap]# kubectl create configmap cx-2 --from-file=./cx-1
 configmap/cx-2 created
+[root@master-1 configmap]# kubectl apply -f pod.yaml  
+pod/mysql-pod created
+[root@master-1 configmap]# kubectl get pod
+NAME                                      READY   STATUS    RESTARTS   AGE
+mysql-pod                                 1/1     Running   0          16s
+nfs-client-provisioner-7c7bf9f6bd-dp5h8   1/1     Running   18         55d
+nginx-test                                1/1     Running   17         160d
+storage-0                                 1/1     Running   13         54d
+storage-1                                 1/1     Running   13         54d
+[root@master-1 configmap]# kubectl describe pod mysql-pod
+Name:         mysql-pod
+Namespace:    default
+Priority:     0
+Node:         node-1/192.168.10.30
+Start Time:   Sat, 08 Jul 2023 14:23:42 +0800
+Labels:       <none>
+Annotations:  cni.projectcalico.org/podIP: 10.244.84.181/32
+              cni.projectcalico.org/podIPs: 10.244.84.181/32
+Status:       Running
+IP:           10.244.84.181
+IPs:
+  IP:  10.244.84.181
+Containers:
+  mysql:
+    Container ID:  docker://e6e62ad6a453e704b74f5c553741cbc781ca9b42a9a1176d362357dfba0452af
+    Image:         busybox
+    Image ID:      docker-pullable://busybox@sha256:2376a0c12759aa1214ba83e771ff252c7b1663216b192fbe5e0fb364e952f85c
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -c
+      sleep 3600
+    State:          Running
+      Started:      Sat, 08 Jul 2023 14:23:51 +0800
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      log_bin:  <set to the key 'log' of config map 'mysql'>    Optional: false
+      lower:    <set to the key 'lower' of config map 'mysql'>  Optional: false
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-w7bhz (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  default-token-w7bhz:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-w7bhz
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  33s   default-scheduler  Successfully assigned default/mysql-pod to node-1
+  Normal  Pulling    32s   kubelet            Pulling image "busybox"
+  Normal  Pulled     25s   kubelet            Successfully pulled image "busybox" in 7.054387965s
+  Normal  Created    25s   kubelet            Created container mysql
+  Normal  Started    25s   kubelet            Started container mysql
+[root@master-1 configmap]# kubectl get pod
+NAME                                      READY   STATUS    RESTARTS   AGE
+mysql-pod                                 1/1     Running   0          49s
+nfs-client-provisioner-7c7bf9f6bd-dp5h8   1/1     Running   18         55d
+nginx-test                                1/1     Running   17         160d
+storage-0                                 1/1     Running   13         54d
+storage-1                                 1/1     Running   13         54d
 
