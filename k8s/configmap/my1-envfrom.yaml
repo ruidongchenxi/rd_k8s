@@ -5,9 +5,9 @@ metadata:
 spec:
   containers:
   - name: mysql
-    image: busybox
+    image: nginx
     imagePullPolicy: IfNotPresent
-    command: ["/bin.sh","-c","sleep 3600"] 
+    #icommand: ["/bin.sh","-c","sleep 3600"] 
     volumeMounts:   #以挂载的形式注入
     - name: my-cx
       mountPath: /tmp/config

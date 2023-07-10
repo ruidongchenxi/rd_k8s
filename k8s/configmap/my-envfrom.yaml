@@ -5,9 +5,9 @@ metadata:
 spec:
   containers:
   - name: mysql
-    image: busybox
+    image: nginx
     imagePullPolicy: IfNotPresent
-    command: ["/bin.sh","-c","sleep 3600"] 
+  #  command: ["/bin.sh","-c","sleep 3600"] 
     envFrom:
     - configMapRef:
         name: mysql

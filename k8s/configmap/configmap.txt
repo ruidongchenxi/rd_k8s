@@ -171,3 +171,80 @@ nginx-test                                1/1     Running   17         160d
 storage-0                                 1/1     Running   13         54d
 storage-1                                 1/1     Running   13         54d
 
+热加载
+进入容器
+[root@master-1 configmap]# kubectl exec -it chenxi-1 -c mysql -- /bin/sh
+# cd /tmp/config
+# cat my.cnf    
+[mysql]
+welana=cx
+# cat log
+1# cat lower
+1#  
+更新配置
+[root@master-1 configmap]# kubectl edit cm mysql-1 
+
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  log: "1"
+  lower: "1"
+  my.cnf: |
+    [mysql]
+    welana=cx
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"log":"1","lower":"1","my.cnf":"[mysql]\nwelana=cx\n"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"mysql"},"name":"mysql-1","namespace":"default"}}
+  creationTimestamp: "2023-07-08T08:03:26Z"
+  labels:
+    app: mysql
+  name: mysql-1
+  namespace: default
+  resourceVersion: "10808870"
+  uid: b616cf2c-3cc1-4df3-9d81-563c077d9fb7
+编辑
+[root@master-1 configmap]# kubectl edit cm mysql-1 
+
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  log: "8" # 更新后的值
+  lower: "7" # 更新后的值
+  my.cnf: |
+    [mysql]
+    welana=cx-1dr# 更新后的值
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"log":"1","lower":"1","my.cnf":"[mysql]\nwelana=cx\n"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"mysql"},"name":"mysql-1","namespace":"default"}}
+  creationTimestamp: "2023-07-08T08:03:26Z"
+  labels:
+    app: mysql
+  name: mysql-1
+  namespace: default
+  resourceVersion: "10808870"
+  uid: b616cf2c-3cc1-4df3-9d81-563c077d9fb7
+更新后查看pod
+[root@master-1 configmap]# kubectl exec -it chenxi-1 -c mysql -- /bin/sh
+# cd /tmp/config
+# cat my.cnf    
+[mysql]
+welana=cx
+# cat log
+1# cat lower
+1# cat log
+8# cat lower
+7# cat my.cnf
+[mysql]
+welana=cx-1dr
+# 
+
