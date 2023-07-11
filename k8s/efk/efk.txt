@@ -97,7 +97,106 @@ LISTEN     0      128        ::1:9200                    :::*                   
   "nodes" : {
     "sPOs-whUR1Sb8KzktQ05IQ" : {
       "name" : "es-cluster-1",
- 
+#创建
+[root@master-1 efk]# kubectl apply -f kibana.yaml 
+service/kibana created
+deployment.apps/kibana created
+[root@master-1 efk]# cat kibana.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: kube-logging
+  labels:
+    app: kibana
+spec:
+  ports:
+  - port: 5601
+  selector:
+    app: kibana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: kube-logging
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        env:
+          - name: ELASTICSEARCH_URL
+            value: http://elasticsearch:9200
+        ports:
+        - containerPort: 5601
+[root@master-1 efk]# kubectl get pod -n kube-logging
+NAME                     READY   STATUS    RESTARTS   AGE
+es-cluster-0             1/1     Running   0          22m
+es-cluster-1             1/1     Running   0          22m
+es-cluster-2             1/1     Running   0          22m
+kibana-84cf7f59c-q8zkq   1/1     Running   0          43s
+[root@master-1 efk]# kubectl get svc -n kube-logging
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+elasticsearch   ClusterIP   None             <none>        9200/TCP,9300/TCP   16h
+kibana          ClusterIP   10.109.228.251   <none>        5601/TCP            2m33s
+修改svc 类型
+[root@master-1 efk]# kubectl edit svc kibana -n kube-logging
+ # Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"kibana"},"name":"kibana","namespace":"kube-logging"},"spec":{"ports":[{"port":5601}],"selector":{"app":"kibana"}}}
+  creationTimestamp: "2023-07-11T01:18:43Z"
+  labels:
+    app: kibana
+  name: kibana
+  namespace: kube-logging
+  resourceVersion: "11224297"
+  uid: dd6e6747-8986-4934-b519-fbda1c3f2084
+spec:
+  clusterIP: 10.109.228.251
+  clusterIPs:
+  - 10.109.228.251
+  ports:
+  - port: 5601
+    protocol: TCP
+    targetPort: 5601
+  selector:
+    app: kibana
+  sessionAffinity: None
+  type: NodePort #类型修改为 
+status:
+  loadBalancer: {}
+查看映射的端口
+[root@master-1 efk]# kubectl get svc -n kube-logging
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+elasticsearch   ClusterIP   None             <none>        9200/TCP,9300/TCP   17h
+kibana          NodePort    10.109.228.251   <none>        5601:30870/TCP      7m22s
+[root@master-1 efk]# ss -lntp | grep 30870
+LISTEN     0      128          *:30870                    *:*                   users:(("kube-proxy",pid=20853,fd=15))
+
 
 
 
