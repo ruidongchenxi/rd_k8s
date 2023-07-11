@@ -1,0 +1,103 @@
+创建名称空间
+[root@master-1 efk]# cat kube-logging.yaml 
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: kube-logging
+[root@master-1 efk]# kubectl apply -f kube-logging.yaml 
+namespace/kube-logging created
+查看名称空间
+[root@master-1 efk]# kubectl get ns 
+NAME                   STATUS   AGE
+default                Active   172d
+kube-logging           Active   12s
+kube-node-lease        Active   172d
+kube-public            Active   172d
+kube-system            Active   172d
+kubernetes-dashboard   Active   59d
+lucky                  Active   59d
+创建无头服务
+[root@master-1 efk]# cat elasticsearch_svc.yaml 
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: kube-logging
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  clusterIP: None #None 无头服务，不对集群外部使用--尘曦
+  ports:
+    - port: 9200
+      name: rest
+    - port: 9300
+      name: inter-node
+[root@master-1 efk]# cat elasticsearch_svc.yaml 
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: kube-logging
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  clusterIP: None #None 无头服务，不对集群外部使用--尘曦
+  ports:
+    - port: 9200
+      name: rest
+    - port: 9300
+      name: inter-node
+[root@master-1 efk]# kubectl apply -f 
+class.yaml                      elasticsaerch-statefulset.yaml  fluentd.yaml                    kube-logging.yaml               rbac.yaml                       
+deployment.yaml                 elasticsearch_svc.yaml          kibana.yaml                     pod.yaml                        serviceaccount.yaml             
+[root@master-1 efk]# kubectl apply -f elasticsearch_svc.yaml 
+service/elasticsearch created
+[root@master-1 efk]# kubectl -n kube-logging get svc
+NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)             AGE
+elasticsearch   ClusterIP   None         <none>        9200/TCP,9300/TCP   40s
+
+有默认的这个不写驱动名字
+#      #annotations: 
+#      #  volume.beat.kubernetes.io/storage-class: "managed-nfs-storage" #注解建议与动态存储类名字一致· 
+#      labels:
+#        app: elasticsearch # 设备标签
+#      storageClassName: do-block-storage # 存储设备名字
+创建集群
+ kubectl apply -f elasticsaerch1-statefulset.yaml 
+查看
+[root@master-1 NFS-storageclass]# kubectl get pod -n kube-logging 
+NAME           READY   STATUS    RESTARTS   AGE
+es-cluster-0   1/1     Running   0          8m26s
+es-cluster-1   1/1     Running   0          8m11s
+es-cluster-2   1/1     Running   0          7m56s
+#设置转发
+[root@master-1 NFS-storageclass]# kubectl port-forward es-cluster-0 9200:9200 --namespace=kube-logging
+Forwarding from 127.0.0.1:9200 -> 9200
+Forwarding from [::1]:9200 -> 9200
+Handling connection for 9200
+Handling connection for 9200
+#查看端口
+[root@master-1 ~]# ss -lntp | grep 9200
+LISTEN     0      128    127.0.0.1:9200                     *:*                   users:(("kubectl",pid=52007,fd=8))
+LISTEN     0      128        ::1:9200                    :::*                   users:(("kubectl",pid=52007,fd=9))
+测试
+[root@master-1 ~]# curl http://localhost:9200/_cluster/state?pretty >1
+[root@master-1 ~]# head 1
+{
+  "cluster_name" : "k8s-logs",
+  "cluster_uuid" : "mVEsPovSRSaNtKCqMPcIxQ",
+  "version" : 17,
+  "state_uuid" : "sWjzkLtXSgy1_T2k8BIHnQ",
+  "master_node" : "zMzyQlToTOONuqolE5-bXA",
+  "blocks" : { },
+  "nodes" : {
+    "sPOs-whUR1Sb8KzktQ05IQ" : {
+      "name" : "es-cluster-1",
+ 
+
+
+

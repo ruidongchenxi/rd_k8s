@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     app: elasticsearch
-  clusterIP: None
+  clusterIP: None #None 无头服务，不对集群外部使用--尘曦
   ports:
     - port: 9200
       name: rest

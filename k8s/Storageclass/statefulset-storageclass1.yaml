@@ -41,8 +41,8 @@ spec:
   volumeClaimTemplates: # 存储申请模板
   - metadata:
       name: www #动态申请的名字
-      annotations: 
-        volume.beat.kubernetes.io/storage-class: "managed-nfs-storage" #注解建议与动态存储类名字一致· 
+#      annotations: 
+#        volume.beat.kubernetes.io/storage-class: "managed-nfs-storage" #注解建议与动态存储类名字一致· 
     spec:
       accessModes: ["ReadWriteOnce"]
       resources:

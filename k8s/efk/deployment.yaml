@@ -26,11 +26,11 @@ spec:
             - name: PROVISIONER_NAME
               value: example.com/nfs
             - name: NFS_SERVER
-              value: 192.168.0.6
+              value: 192.168.10.29
             - name: NFS_PATH
-              value: /data/v1
+              value: /data/kubernetes/pv2
       volumes:
         - name: nfs-client-root
           nfs:
-            server: 192.168.0.6
-            path: /data/v1
+            server: 192.168.10.29
+            path: /data/kubernetes/pv2

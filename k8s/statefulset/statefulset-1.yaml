@@ -45,4 +45,4 @@ spec:
       - ReadWriteOnce
       resources: # 空间大小设置
         requests:
-          storage: 1Gi  
+          storage: 5Gi  

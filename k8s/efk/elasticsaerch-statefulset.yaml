@@ -4,36 +4,36 @@ metadata:
   name: es-cluster
   namespace: kube-logging
 spec:
-  serviceName: elasticsearch
-  replicas: 3
+  serviceName: elasticsearch # 引用的svn 服务的名字
+  replicas: 3 # 副本数量
   selector:
     matchLabels:
-      app: elasticsearch
+      app: elasticsearch # 匹配拥有此标签的pod
   template:
-    metadata:
-      labels:
-        app: elasticsearch
-    spec:
-      containers:
-      - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-        imagePullPolicy: IfNotPresent
-        resources:
-            limits:
+    metadata: #pod 的元数据定义
+      labels: # pod 的标签定义
+        app: elasticsearch # pod 的标签定义
+    spec: # pod 期望状态
+      containers: # 主容器的期望状态集
+      - name: elasticsearch # 容器的名字
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0 # 使用镜像
+        imagePullPolicy: IfNotPresent   # 获取镜像策略
+        resources: #资源定义
+            limits: # 最大不超过
               cpu: 1000m
-            requests:
+            requests: # 最小资源
               cpu: 100m
-        ports:
+        ports: # 端口
         - containerPort: 9200
           name: rest
           protocol: TCP
         - containerPort: 9300
           name: inter-node
           protocol: TCP
-        volumeMounts:
-        - name: data
+        volumeMounts: # 存储
+        - name: data #挂载的数据设备名字
           mountPath: /usr/share/elasticsearch/data
-        env:
+        env: # 变量
           - name: cluster.name
             value: k8s-logs
           - name: node.name
@@ -46,36 +46,35 @@ spec:
             value: "es-cluster-0,es-cluster-1,es-cluster-2"
           - name: ES_JAVA_OPTS
             value: "-Xms512m -Xmx512m"
-      initContainers:
-      - name: fix-permissions
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
-        securityContext:
-          privileged: true
+      initContainers: # 初始化容器集
+      - name: fix-permissions # 名字
+        image: busybox # 镜像
+        imagePullPolicy: IfNotPresent # 获取镜像策略
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"] # 执行的命令
+        securityContext: # 安全相关的设定
+          privileged: true # 该容器特权模式下运行
         volumeMounts:
-        - name: data
+        - name: data # 挂载名字
           mountPath: /usr/share/elasticsearch/data
-      - name: increase-vm-max-map
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        command: ["sysctl", "-w", "vm.max_map_count=262144"]
-        securityContext:
-          privileged: true
-      - name: increase-fd-ulimit
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        command: ["sh", "-c", "ulimit -n 65536"]
-        securityContext:
-          privileged: true
-  volumeClaimTemplates:
+      - name: increase-vm-max-map #容器名字
+        image: busybox # 镜像
+        imagePullPolicy: IfNotPresent # 镜像策略
+        command: ["sysctl", "-w", "vm.max_map_count=262144"] # 运行的命令
+        securityContext: # 安全相关的设定
+          privileged: true # 该容器特权模式下运行
+      - name: increase-fd-ulimit # 容器名字
+        image: busybox # 镜像名字
+        imagePullPolicy: IfNotPresent # 获取镜像策略
+        command: ["sh", "-c", "ulimit -n 65536"] # 运行的命令
+        securityContext: # 安全相关的设定
+          privileged: true # 该容器在特权模式下运行
+  volumeClaimTemplates: #挂载硬件属性
   - metadata:
-      name: data
+      name: data # 设备明细
       labels:
-        app: elasticsearch
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: do-block-storage
+        app: elasticsearch # 设备标签
+    spec: #设备期望状态
+      accessModes: [ "ReadWriteOnce" ] # 授予权限,只能映射到单个pod 读写
       resources:
         requests:
-          storage: 10Gi
+          storage: 10Gi # 大小
