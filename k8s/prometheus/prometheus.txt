@@ -1,0 +1,54 @@
+创建名称空间
+[root@master-1 prometheus]# kubectl create namespace monitor-sa
+部署node-expor组件
+[root@master-1 prometheus]# kubectl apply -f node-export.yaml 
+查看
+[root@master-1 prometheus]# kubectl get pod -n monitor-sa -o wide
+NAME                  READY   STATUS    RESTARTS   AGE   IP              NODE       NOMINATED NODE   READINESS GATES
+node-exporter-rh88q   1/1     Running   0          49m   192.168.10.29   master-1   <none>           <none>
+node-exporter-sxv4m   1/1     Running   0          49m   192.168.10.30   node-1     <none>           <none>
+测试查看获取的数据
+[root@master-1 prometheus]# curl 192.168.10.29:9100/metrics > ceshi-node-export.txt
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 74753  100 74753    0     0  5686k      0 --:--:-- --:--:-- --:--:-- 6083k
+[root@master-1 prometheus]# head ceshi-node-export.txt 
+# HELP go_gc_duration_seconds A summary of the GC invocation durations.
+# TYPE go_gc_duration_seconds summary
+go_gc_duration_seconds{quantile="0"} 3.0438e-05
+go_gc_duration_seconds{quantile="0.25"} 0.000147175
+go_gc_duration_seconds{quantile="0.5"} 0.000456013
+go_gc_duration_seconds{quantile="0.75"} 0.000920517
+go_gc_duration_seconds{quantile="1"} 0.002039825
+go_gc_duration_seconds_sum 0.015214321
+go_gc_duration_seconds_count 25
+# HELP go_goroutines Number of goroutines that currently exist.
+# 创建sa
+[root@master-1 prometheus]# kubectl create sa monitor -n monitor-sa
+serviceaccount/monitor created
+#创建clusterrolebinding 
+[root@master-1 prometheus]# kubectl create clusterrolebinding moitor-clusterrolebinding -n moitor-sa --clusterrole=cluster-admin --serviceaccount=moitor-sa:monitor
+clusterrolebinding.rbac.authorization.k8s.io/moitor-clusterrolebinding created
+# 在集群node-1创建/data目录
+[root@node-1 ~]# mkdir /data
+[root@node-1 ~]# chmod 777 /data
+#指定pod 调度的节点
+    spec:
+      nodeName: node-1 #数据节点,在node-1创建了/data目录
+      serviceAccountName: monitor
+#运行部署
+[root@master-1 prometheus]# kubectl apply -f prometheus-deploy.yaml 
+deployment.apps/prometheus-server created
+#查看状态
+[root@master-1 prometheus]# kubectl get pod -n monitor-sa
+NAME                                 READY   STATUS    RESTARTS   AGE
+node-exporter-rh88q                  1/1     Running   0          141m
+node-exporter-sxv4m                  1/1     Running   0          141m
+prometheus-server-7c64b5f8f5-6647f   1/1     Running   0          15s
+[root@master-1 prometheus]# kubectl get pod -n monitor-sa -o wide
+NAME                                 READY   STATUS    RESTARTS   AGE    IP              NODE       NOMINATED NODE   READINESS GATES
+node-exporter-rh88q                  1/1     Running   0          146m   192.168.10.29   master-1   <none>           <none>
+node-exporter-sxv4m                  1/1     Running   0          146m   192.168.10.30   node-1     <none>           <none>
+prometheus-server-7c64b5f8f5-6647f   1/1     Running   0          5m2s   10.244.84.185   node-1     <none>           <none>
+
+
