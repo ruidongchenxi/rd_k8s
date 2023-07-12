@@ -1,0 +1,57 @@
+创建名称空间
+[root@master-1 devops]# kubectl create ns jenkins-k8s
+namespace/jenkins-k8s created
+创建pvc 存储，由于有动态存储供给不用手动创建pv
+[root@master-1 devops]# kubectl apply -f pvc.yaml 
+persistentvolumeclaim/jenkins-k8s-pvc created
+# 查看创建的pvc 
+
+[root@master-1 devops]# kubectl get  pvc  -n jenkins-k8s -o wide
+NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS          AGE     VOLUMEMODE
+jenkins-k8s-pvc   Bound    pvc-fbe3c114-3258-435a-8d12-720affb08f39   10Gi       RWX            managed-nfs-storage   4m10s   Filesystem
+创建ca 账户
+[root@master-1 devops]# kubectl create sa jenkins-k8s-sa -n jenkins-k8s
+serviceaccount/jenkins-k8s-sa created
+查看建立的账户
+[root@master-1 devops]# kubectl get -n jenkins-k8s sa
+NAME             SECRETS   AGE
+default          1         37m
+jenkins-k8s-sa   1         9m34s
+创建集群管理员级别的绑定名字叫jenkins-k8s-sa-clusterrolebinding 
+[root@master-1 devops]# kubectl create clusterrolebinding jenkins-k8s-sa-clusterrolebinding -n jenkins-k8s --clusterrole=cluster-admin --serviceaccount=jenkins-k8s:jenkins-k8s-sa
+clusterrolebinding.rbac.authorization.k8s.io/jenkins-k8s-sa-clusterrolebinding created
+部署jenkins
+[root@master-1 devops]# kubectl apply -f jenkins-deployment.yaml 
+deployment.apps/jenkins created
+[root@master-1 jenkins-home]# kubectl get pod -n jenkins-k8s -o wide
+NAME                       READY   STATUS    RESTARTS   AGE     IP              NODE     NOMINATED NODE   READINESS GATES
+jenkins-566f6b4fff-cvhxw   1/1     Running   0          3m27s   10.244.84.183   node-1   <none>           <none>
+部署service
+[root@master-1 devops]# kubectl apply -f jenkins-service.yaml 
+service/jenkins-service created
+[root@master-1 devops]# kubectl get svc -n jenkins-k8s -o wide
+NAME              TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                          AGE   SELECTOR
+jenkins-service   NodePort   10.107.109.197   <none>        8080:30002/TCP,50000:32718/TCP   13s   app=jenkins
+查看主机端口;主机端口代理到service----》代理到pod 端口
+[root@master-1 devops]# ss -lntp | grep 30002
+LISTEN     0      128          *:30002                    *:*                   users:(("kube-proxy",pid=20853,fd=18))
+浏览器 节点:30002
+
+#进入容器查看密钥
+[root@master-1 devops]# kubectl exec -it -n jenkins-k8s jenkins-566f6b4fff-cvhxw -- /bin/sh
+$ ls
+bin  boot  dev	etc  home  lib	lib64  media  mnt  opt	proc  root  run  sbin  srv  sys  tmp  usr  var
+$ cd /usr
+$ cat /var/jenkins_home/secrets/initialAdminPassword
+e299d58b01d3405db42ca88c4d7b87bf
+# 或者
+[root@master-1 devops]# cd /data/kubernetes/pv1/jenkins-k8s-jenkins-k8s-pvc-pvc-fbe3c114-3258-435a-8d12-720affb08f39/jenkins-home/secrets/
+[root@master-1 secrets]# cat initialAdminPassword 
+e299d58b01d3405db42ca88c4d7b87bf
+
+jenkins: 管理员账户：admin:123.com
+5.3 测试 jenkins 的 CI/CD 
+5.3.1 在 Jenkins 中安装 kubernetes 插件 
+（1）在 jenkins 中安装 k8s 插件 
+Manage Jnekins------>插件管理------>可选插件------>搜索 kubernetes------>出现如下
+
